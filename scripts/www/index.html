@@ -1,11 +1,1139 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PakePlus</title>
-    </head>
-    <body>
-        PakePlus
-    </body>
+<html lang="zh-hans">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>暗区突围 · 偷吃模拟器 (最终版)</title>
+    <!-- Font Awesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* ========== 全局样式 ========== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            padding: 16px;
+            color: #1a1a1a;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        .text-center { text-align: center; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-8 { margin-top: 2rem; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-5 { margin-bottom: 1.25rem; }
+        .ml-2 { margin-left: 0.5rem; }
+        .p-4 { padding: 1rem; }
+        .p-5 { padding: 1.25rem; }
+        .w-full { width: 100%; }
+        .font-semibold { font-weight: 600; }
+        .text-lg { font-size: 1.125rem; }
+        .rounded-box { border-radius: 12px; }
+        .bg-white { background-color: #ffffff; }
+        .border { border: 1px solid #e5e7eb; }
+
+        /* 按钮样式 */
+        .btn {
+            cursor: pointer;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background 0.2s;
+            display: inline-block;
+            background-color: #e0e0e0;
+            color: #1a1a1a;
+            margin: 0 4px;
+        }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-info { background-color: #17a2b8; color: white; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn:hover { opacity: 0.85; }
+
+        /* 容器卡片 */
+        .items-grid {
+            display: grid;
+            gap: 16px;
+            padding: 16px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        }
+        .item-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .item-card:hover {
+            border-color: #17a2b8;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+        .item-image {
+            width: 60px;
+            height: 60px;
+            background: #f0f2f5;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin-bottom: 12px;
+        }
+        .item-name { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+        .badge {
+            background: #17a2b8;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        /* ========== 5x4 网格 ========== */
+        .grid-wrapper {
+            position: relative;
+            margin: 16px 0;
+            background: #ffffff;
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+            background-color: #e0e0e0;
+            padding: 4px;
+            border-radius: 4px;
+        }
+        .grid-cell {
+            aspect-ratio: 1 / 1;
+            background-color: #ffffff;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            font-size: 12px;
+            color: white;
+        }
+        /* 稀有度背景色 */
+        .grade1 { background-color: #5a5a5a; } /* 白 */
+        .grade2 { background-color: #2e7d32; } /* 绿 */
+        .grade3 { background-color: #1565c0; } /* 蓝 */
+        .grade4 { background-color: #6a1b9a; } /* 紫 */
+        .grade5 { background-color: #b76e1e; } /* 金 */
+        .grade6 { background-color: #b71c1c; } /* 红 */
+
+        /* 物品覆盖层（跨格图片或 emoji 占位） */
+        .item-cover {
+            position: absolute;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            z-index: 15;
+            pointer-events: none;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            padding: 4px;
+        }
+        .item-cover .item-details {
+            color: #ffd700;
+            text-shadow: 1px 1px 1px black;
+            background: rgba(0,0,0,0.5);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 9px;
+            display: flex;
+            gap: 4px;
+        }
+        .item-name-short {
+            max-width: 60px; /* 容纳6个中文字符 */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        /* 无图片时的 emoji 占位 */
+        .item-cover .emoji-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        /* 整体搜索蒙版（正计时） */
+        .overall-mask {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            border-radius: 8px;
+            color: white;
+        }
+        .overall-mask .search-text { font-size: 16px; margin-bottom: 4px; }
+        .overall-mask .timer { font-size: 14px; font-family: monospace; }
+
+        /* 物品蒙版（公转放大镜） */
+        .mask-overlay {
+            position: absolute;
+            background: #000000;
+            border-radius: 4px;
+            z-index: 10;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .orbit-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            animation: orbit 1s linear infinite;
+            transform-origin: center center;
+        }
+        .orbit-container i {
+            position: absolute;
+            font-size: 40px;
+            color: #ffffff;
+            top: 45%;
+            left: 45%;
+            transform: translate(-50%, -50%);
+            animation: counter-orbit 1s linear infinite;
+        }
+        @keyframes orbit {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes counter-orbit {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
+        }
+
+        /* 控制台 */
+        .console-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 20px;
+            border: 1px solid #e5e7eb;
+        }
+        .fieldset {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+        .legend { font-weight: 600; padding: 0 8px; }
+        .label {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 16px;
+            cursor: pointer;
+        }
+        .checkbox { width: 16px; height: 16px; margin-right: 4px; }
+
+        /* 弹窗 */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-header { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+        .record-category {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 12px 0 8px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 4px;
+        }
+        .record-item {
+            display: inline-block;
+            width: 100px;
+            margin: 4px;
+            padding: 8px;
+            background: #f9fafb;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+        .close-btn { margin-top: 16px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center text-lg font-semibold mt-2">暗区突围 · 偷吃模拟器</h1>
+
+        <!-- 初始提示 -->
+        <div id="jinggao" class="p-4 mt-4 bg-white rounded-box text-center border">
+            <div class="item-image" style="margin:0 auto;">🐭</div>
+            <div class="mt-4">你是一只电视台的鼠鼠。外面炮火连天，你在角落瑟瑟发抖，无意中看到了一个解锁但是未开启的保险……</div>
+            <button class="btn btn-info mt-4" onclick="start()">进入保险箱</button>
+        </div>
+
+        <!-- 主模拟器区域 (初始隐藏) -->
+        <div id="moniqi" style="display: none;">
+            <!-- 容器列表 (只有一个保险箱) -->
+            <div id="container-list" class="items-grid"></div>
+
+            <!-- 搜索网格区域 (初始隐藏) -->
+            <div id="search-area" style="display: none;">
+                <div class="flex justify-between items-center mb-2">
+                    <span id="search-title" class="text-lg font-semibold">第1次搜刮 保险箱</span>
+                    <span id="total-price" class="text-lg" style="color:#b45309;">0</span>
+                </div>
+                <!-- 网格包装器，用于绝对定位蒙版 -->
+                <div id="grid-wrapper" class="grid-wrapper">
+                    <div id="grid" class="grid-container"></div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="text-center mt-4">
+                    <button id="btn-continue" class="btn btn-secondary" onclick="continueSearch()">继续吃</button>
+                    <button id="btn-back" class="btn btn-info" onclick="backToList()">吃其他的</button>
+                    <button id="btn-records" class="btn btn-success" onclick="showRecords()">得吃记录</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 控制台 -->
+        <div class="console-panel">
+            <div class="fieldset">
+                <div class="legend">📊 得吃记录</div>
+                <button class="btn btn-success" onclick="showRecords()">查看记录</button>
+                <button class="btn btn-secondary ml-2" onclick="clearRecords()">清除记录</button>
+            </div>
+            <div class="fieldset">
+                <div class="legend">⚙️ 控制台</div>
+                <label class="label"><input type="checkbox" class="checkbox" id="chk_name" checked> 显示长名称</label>
+                <label class="label"><input type="checkbox" class="checkbox" id="chk_sound"> 音效</label>
+                <label class="label"><input type="checkbox" class="checkbox" id="chk_highrate"> 高爆率模式 (四格六格更多)</label>
+                <label class="label"><input type="checkbox" class="checkbox" id="chk_vibrate"> 震动反馈 (出金时)</label>
+            </div>
+            <div class="text-sm" style="color:#6b7280;">注：仅为娱乐，不代表游戏实际概率。</div>
+        </div>
+    </div>
+
+    <!-- 得吃记录弹窗 -->
+    <div id="recordsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">📋 得吃记录</div>
+            <div id="recordsContent"></div>
+            <div class="close-btn"><button class="btn" onclick="closeModal()">关闭</button></div>
+        </div>
+    </div>
+
+    <!-- 音频预留 -->
+    <audio id="sound-coin" src="sounds/coin.mp3" preload="auto"></audio>
+    <audio id="sound-purple" src="sounds/purple.mp3" preload="auto"></audio>
+    <audio id="sound-gold-small" src="sounds/gold_small.mp3" preload="auto"></audio>
+    <audio id="sound-gold-big" src="sounds/gold_big.mp3" preload="auto"></audio>
+    <!-- 整体搜索音效分为两段 -->
+    <audio id="sound-overall-start" src="sounds/overall_start.mp3" preload="auto"></audio>
+    <audio id="sound-overall-loop" src="sounds/overall_loop.mp3" preload="auto" loop></audio>
+
+    <script>
+        // ---------- 全局变量 ----------
+        const ROWS = 5;
+        const COLS = 4;
+        let currentContainerId = 1;
+        let currentItems = [];
+        let gridState = [];
+        let searchCount = 0;
+        let isSearching = false;
+        let revealTimeouts = [];
+        let overallAudio = null; // 用于存储循环播放的音频对象
+
+        // 高爆率开关
+        let IsHighRate = false;
+        // 震动开关
+        let IsVibrate = false;
+        // 音效开关
+        let soundEnabled = false;
+
+        // 物品类别
+        const CATEGORY = { COIN:1, PURPLE:2, GOLD_SMALL:3, GOLD_BIG:4 };
+
+        // 搜索时间 (毫秒)
+        const SEARCH_TIME = {
+            [CATEGORY.COIN]: 1000,
+            [CATEGORY.PURPLE]: 1700,
+            [CATEGORY.GOLD_SMALL]: 2500,
+            [CATEGORY.GOLD_BIG]: 3500
+        };
+
+        // 稀有度颜色
+        const gradeColors = {
+            1:'grade1',2:'grade2',3:'grade3',4:'grade4',5:'grade5',6:'grade6'
+        };
+
+        // 音效开关
+        document.getElementById('chk_sound').addEventListener('change', (e) => {
+            soundEnabled = e.target.checked;
+            // 如果关闭音效且整体搜索音频正在播放，停止它
+            if (!soundEnabled && overallAudio) {
+                overallAudio.pause();
+                overallAudio.currentTime = 0;
+                overallAudio = null;
+            }
+        });
+
+        // 高爆率开关
+        document.getElementById('chk_highrate').addEventListener('change', (e) => {
+            IsHighRate = e.target.checked;
+        });
+
+        // 震动开关
+        document.getElementById('chk_vibrate').addEventListener('change', (e) => {
+            IsVibrate = e.target.checked;
+        });
+
+        // 播放音效函数（可重叠，每次新建 Audio 对象）
+        function playSound(type) {
+            if (!soundEnabled) return;
+            const src = {
+                'coin': 'sounds/coin.mp3',
+                'purple': 'sounds/purple.mp3',
+                'goldSmall': 'sounds/gold_small.mp3',
+                'goldBig': 'sounds/gold_big.mp3'
+            }[type];
+            if (!src) return;
+            const audio = new Audio(src);
+            audio.play().catch(() => {}); // 忽略自动播放限制错误
+        }
+
+        // 开始播放整体搜索音效（先播放一次 start，然后循环 loop）
+        function playOverallLoop() {
+            if (!soundEnabled) return;
+            // 播放一次 start 音效
+            const startAudio = new Audio('sounds/overall_start.mp3');
+            startAudio.play().catch(() => {});
+            // 播放循环音效
+            stopOverallLoop(); // 确保之前没有正在播放的循环
+            overallAudio = new Audio('sounds/overall_loop.mp3');
+            overallAudio.loop = true;
+            overallAudio.play().catch(() => {});
+        }
+
+        // 停止整体搜索循环音效
+        function stopOverallLoop() {
+            if (overallAudio) {
+                overallAudio.pause();
+                overallAudio.currentTime = 0;
+                overallAudio = null;
+            }
+        }
+
+        // 震动函数 (出金时调用)
+        function vibrateIfGold(category) {
+            if (!IsVibrate) return;
+            if (category === CATEGORY.GOLD_SMALL || category === CATEGORY.GOLD_BIG) {
+                if (navigator.vibrate) {
+                    navigator.vibrate(200);
+                }
+            }
+        }
+
+        // ---------- 科恩币 ----------
+        const coinBase = { id:'coin', name:'科恩币', grade:1, priceRange:[1000,1085], width:1, height:1, emoji:'💰', image:'images/coin.png', category:CATEGORY.COIN };
+
+        // ---------- 大金物品 (价格 ≥16w) ----------
+        const goldBigItems = [
+            // 横六 3x2
+            { id:'fsyb', name:'火炮发射药包', grade:5, price:210000, width:3, height:2, emoji:'🔥', image:'images/fsyb.png', category:CATEGORY.GOLD_BIG },
+            { id:'xlclq', name:'向量处理器', grade:5, price:210000, width:3, height:2, emoji:'⚙️', image:'images/xlclq.png', category:CATEGORY.GOLD_BIG },
+            { id:'zjmk', name:'正极模块', grade:5, price:210000, width:3, height:2, emoji:'🔋', image:'images/zjmk.png', category:CATEGORY.GOLD_BIG },
+            { id:'dzjxb', name:'多轴机械臂', grade:5, price:210000, width:3, height:2, emoji:'🦾', image:'images/dzjxb.png', category:CATEGORY.GOLD_BIG },
+            { id:'sja', name:'设计案', grade:5, price:450000, width:3, height:2, emoji:'📄', image:'images/sja.png', category:CATEGORY.GOLD_BIG },
+            { id:'hjyl', name:'黄金哑铃', grade:5, price:450000, width:3, height:2, emoji:'🏋️', image:'images/hjyl.png', category:CATEGORY.GOLD_BIG },
+            { id:'flw', name:'珐琅碗', grade:5, price:230000, width:3, height:2, emoji:'🥣', image:'images/flw.png', category:CATEGORY.GOLD_BIG },
+            { id:'mzgt', name:'民族挂毯', grade:5, price:200000, width:3, height:2, emoji:'🪢', image:'images/mzgt.png', category:CATEGORY.GOLD_BIG },
+            { id:'jsdx', name:'金狮雕像', grade:5, price:450000, width:3, height:2, emoji:'🦁', image:'images/jsdx.png', category:CATEGORY.GOLD_BIG },
+            { id:'lxg', name:'理想国', grade:5, price:2000000, width:3, height:2, emoji:'🏛️', image:'images/lxg.png', category:CATEGORY.GOLD_BIG },
+            // 竖六 2x3
+            { id:'dxsy', name:'雕像盛宴', grade:5, price:450000, width:2, height:3, emoji:'🗿', image:'images/dxsy.png', category:CATEGORY.GOLD_BIG },
+            // 四格 2x2
+            { id:'sjh', name:'水晶盒', grade:5, price:200000, width:2, height:2, emoji:'💎', image:'images/sjh.png', category:CATEGORY.GOLD_BIG },
+            { id:'jjyl', name:'金驹跃岭雕像', grade:5, price:220000, width:2, height:2, emoji:'🐎', image:'images/jjyl.png', category:CATEGORY.GOLD_BIG },
+            { id:'klxz', name:'科伦勋章', grade:5, price:160000, width:2, height:2, emoji:'🎖️', image:'images/klxz.png', category:CATEGORY.GOLD_BIG },
+            { id:'jzz', name:'金座钟', grade:5, price:160000, width:2, height:2, emoji:'⏰', image:'images/jzz.png', category:CATEGORY.GOLD_BIG },
+            { id:'ystb', name:'羽饰提宝', grade:5, price:160000, width:2, height:2, emoji:'🪶', image:'images/ystb.png', category:CATEGORY.GOLD_BIG },
+            { id:'rgxz', name:'人工心脏', grade:5, price:190000, width:2, height:2, emoji:'❤️', image:'images/rgxz.png', category:CATEGORY.GOLD_BIG },
+            { id:'psjx', name:'盘蛇金像', grade:5, price:250000, width:2, height:2, emoji:'🐍', image:'images/psjx.png', category:CATEGORY.GOLD_BIG },
+            { id:'bsxl', name:'宝石项链', grade:5, price:450000, width:2, height:2, emoji:'💎', image:'images/bsxl.png', category:CATEGORY.GOLD_BIG },
+            { id:'gdch', name:'古董茶壶', grade:5, price:430000, width:2, height:2, emoji:'🍵', image:'images/gdch.png', category:CATEGORY.GOLD_BIG },
+            { id:'dwmk', name:'目标定位模块', grade:5, price:430000, width:2, height:2, emoji:'🎯', image:'images/dwmk.png', category:CATEGORY.GOLD_BIG },
+            { id:'hp', name:'花瓶', grade:5, price:430000, width:2, height:2, emoji:'🏺', image:'images/hp.png', category:CATEGORY.GOLD_BIG },
+            // 新增四格大金
+            { id:'rwr', name:'RWR面板', grade:5, price:170000, width:2, height:2, emoji:'📡', image:'images/rwr.png', category:CATEGORY.GOLD_BIG },
+            { id:'gyb', name:'工业级万用表', grade:5, price:170000, width:2, height:2, emoji:'📟', image:'images/gyb.png', category:CATEGORY.GOLD_BIG },
+            { id:'ryfsq', name:'热诱发射器', grade:5, price:170000, width:2, height:2, emoji:'🔥', image:'images/ryfsq.png', category:CATEGORY.GOLD_BIG },
+            { id:'ggnl', name:'冈格尼尔蓝图', grade:5, price:170000, width:2, height:2, emoji:'📜', image:'images/ggnl.png', category:CATEGORY.GOLD_BIG },
+            // 横二 2x1
+            { id:'ssh', name:'首饰盒', grade:5, price:190000, width:2, height:1, emoji:'📿', image:'images/ssh.png', category:CATEGORY.GOLD_BIG },
+            { id:'wxmx', name:'卫星模型', grade:5, price:160000, width:2, height:1, emoji:'🛰️', image:'images/wxmx.png', category:CATEGORY.GOLD_BIG },
+            { id:'gdjp', name:'古董镜片', grade:5, price:170000, width:2, height:1, emoji:'🔍', image:'images/gdjp.png', category:CATEGORY.GOLD_BIG },
+            { id:'rcxmk', name:'热成像模块', grade:5, price:600000, width:2, height:1, emoji:'🔬', image:'images/rcxmk.png', category:CATEGORY.GOLD_BIG },
+            { id:'jmwj', name:'机密文件', grade:6, price:5000000, width:2, height:1, emoji:'📁', image:'images/jmwj.png', category:CATEGORY.GOLD_BIG },
+            // 竖二 1x2
+            { id:'zljp', name:'阵列镜片', grade:5, price:480000, width:1, height:2, emoji:'🔬', image:'images/zljp.png', category:CATEGORY.GOLD_BIG },
+            { id:'gdhzh', name:'古董化妆盒', grade:5, price:190000, width:1, height:2, emoji:'💄', image:'images/gdhzh.png', category:CATEGORY.GOLD_BIG },
+            { id:'zsyk', name:'钻石原矿', grade:5, price:180000, width:1, height:2, emoji:'💎', image:'images/zsyk.png', category:CATEGORY.GOLD_BIG },
+            { id:'ymb', name:'羽毛笔', grade:5, price:160000, width:1, height:2, emoji:'✒️', image:'images/ymb.png', category:CATEGORY.GOLD_BIG },
+            // 一格 1x1
+            { id:'yzsc', name:'玉质手串', grade:5, price:160000, width:1, height:1, emoji:'📿', image:'images/yzsc.png', category:CATEGORY.GOLD_BIG },
+            { id:'jzgb', name:'金制钢笔', grade:5, price:160000, width:1, height:1, emoji:'🖋️', image:'images/jzgb.png', category:CATEGORY.GOLD_BIG },
+            { id:'cb', name:'城堡', grade:5, price:160000, width:1, height:1, emoji:'🏰', image:'images/cb.png', category:CATEGORY.GOLD_BIG }
+        ];
+
+        // ---------- 小金物品 (价格 1w~8w) ----------
+        const goldSmallItems = [
+            // 横八 4x2 (专用电池组)
+            { id:'zydc', name:'专用电池组', grade:5, price:65000, width:4, height:2, emoji:'🔋', image:'images/zydc.png', category:CATEGORY.GOLD_SMALL },
+            // 横六 3x2
+            { id:'uspdy', name:'USP电源', grade:5, price:50000, width:3, height:2, emoji:'🔌', image:'images/uspdy.png', category:CATEGORY.GOLD_SMALL },
+            { id:'gym', name:'隔音棉', grade:5, price:20000, width:3, height:2, emoji:'🧱', image:'images/gym.png', category:CATEGORY.GOLD_SMALL },
+            { id:'qcxd', name:'汽车蓄电池', grade:5, price:20000, width:3, height:2, emoji:'🔋', image:'images/qcxd.png', category:CATEGORY.GOLD_SMALL },
+            // 竖六 2x3
+            { id:'ryt', name:'燃油桶', grade:5, price:15000, width:2, height:3, emoji:'⛽', image:'images/ryt.png', category:CATEGORY.GOLD_SMALL },
+            { id:'thjb', name:'钛合金板', grade:5, price:20000, width:2, height:3, emoji:'🔩', image:'images/thjb.png', category:CATEGORY.GOLD_SMALL },
+            { id:'yykz', name:'液压扩张器', grade:5, price:50000, width:2, height:3, emoji:'🔧', image:'images/yykz.png', category:CATEGORY.GOLD_SMALL },
+            // 四格 2x2
+            { id:'bjdn', name:'笔记本电脑', grade:5, price:55000, width:2, height:2, emoji:'💻', image:'images/bjdn.png', category:CATEGORY.GOLD_SMALL },
+            { id:'bjxc', name:'钯金线材', grade:5, price:50000, width:2, height:2, emoji:'📿', image:'images/bjxc.png', category:CATEGORY.GOLD_SMALL },
+            { id:'gnrl', name:'高能燃料', grade:5, price:15000, width:2, height:2, emoji:'🔥', image:'images/gnrl.png', category:CATEGORY.GOLD_SMALL },
+            { id:'gtyq', name:'宫廷银器', grade:5, price:50000, width:2, height:2, emoji:'🥈', image:'images/gtyq.png', category:CATEGORY.GOLD_SMALL },
+            { id:'jgmk', name:'激光定位模块', grade:5, price:50000, width:2, height:2, emoji:'🎯', image:'images/jgmk.png', category:CATEGORY.GOLD_SMALL },
+            { id:'jyc', name:'集邮册', grade:5, price:20000, width:2, height:2, emoji:'📮', image:'images/jyc.png', category:CATEGORY.GOLD_SMALL },
+            { id:'jydt', name:'军用电台', grade:5, price:20000, width:2, height:2, emoji:'📻', image:'images/jydt.png', category:CATEGORY.GOLD_SMALL },
+            { id:'lpdzj', name:'老牌打字机', grade:5, price:50000, width:2, height:2, emoji:'📠', image:'images/lpdzj.png', category:CATEGORY.GOLD_SMALL },
+            { id:'lsj', name:'留声机', grade:5, price:50000, width:2, height:2, emoji:'🎵', image:'images/lsj.png', category:CATEGORY.GOLD_SMALL },
+            { id:'syj', name:'摄影机', grade:5, price:55000, width:2, height:2, emoji:'📹', image:'images/syj.png', category:CATEGORY.GOLD_SMALL },
+            { id:'twcc', name:'体外除颤仪', grade:5, price:50000, width:2, height:2, emoji:'⚡', image:'images/twcc.png', category:CATEGORY.GOLD_SMALL },
+            { id:'tx', name:'天线', grade:5, price:20000, width:2, height:2, emoji:'📡', image:'images/tx.png', category:CATEGORY.GOLD_SMALL },
+            // 新增二格小金 2x1
+            { id:'spy', name:'水平仪', grade:5, price:55000, width:2, height:1, emoji:'📏', image:'images/spy.png', category:CATEGORY.GOLD_SMALL },
+            // 横二 2x1
+            { id:'jbdx', name:'金豹雕像', grade:5, price:15000, width:2, height:1, emoji:'🐆', image:'images/jbdx.png', category:CATEGORY.GOLD_SMALL },
+            { id:'jz', name:'金砖', grade:5, price:55000, width:2, height:1, emoji:'🧱', image:'images/jz.png', category:CATEGORY.GOLD_SMALL },
+            { id:'wxsc', name:'维修手册', grade:5, price:20000, width:2, height:1, emoji:'📚', image:'images/wxsc.png', category:CATEGORY.GOLD_SMALL },
+            { id:'xk', name:'显卡', grade:5, price:15000, width:2, height:1, emoji:'💻', image:'images/xk.png', category:CATEGORY.GOLD_SMALL },
+            { id:'yybs', name:'液压扳手', grade:5, price:23000, width:2, height:1, emoji:'🔧', image:'images/yybs.png', category:CATEGORY.GOLD_SMALL },
+            // 竖二 1x2
+            { id:'jb', name:'金杯', grade:5, price:60000, width:1, height:2, emoji:'🏆', image:'images/jb.png', category:CATEGORY.GOLD_SMALL },
+            { id:'yxj', name:'游戏机', grade:5, price:15000, width:1, height:2, emoji:'🎮', image:'images/yxj.png', category:CATEGORY.GOLD_SMALL },
+            // 竖三 1x3
+            { id:'jgz', name:'金拐杖', grade:5, price:15000, width:1, height:3, emoji:'🦯', image:'images/jgz.png', category:CATEGORY.GOLD_SMALL },
+            // 一格 1x1
+            { id:'jmf', name:'金魔方', grade:5, price:50000, width:1, height:1, emoji:'🔲', image:'images/jmf.png', category:CATEGORY.GOLD_SMALL },
+            { id:'jsb', name:'金手表', grade:5, price:15000, width:1, height:1, emoji:'⌚', image:'images/jsb.png', category:CATEGORY.GOLD_SMALL },
+            { id:'jsj', name:'金手机', grade:5, price:25000, width:1, height:1, emoji:'📱', image:'images/jsj.png', category:CATEGORY.GOLD_SMALL },
+            { id:'jsz', name:'金手镯', grade:5, price:15000, width:1, height:1, emoji:'📿', image:'images/jsz.png', category:CATEGORY.GOLD_SMALL },
+            { id:'xz', name:'胸针', grade:5, price:20000, width:1, height:1, emoji:'🧷', image:'images/xz.png', category:CATEGORY.GOLD_SMALL },
+            { id:'yds', name:'胰岛素泵', grade:5, price:15000, width:1, height:1, emoji:'💉', image:'images/yds.png', category:CATEGORY.GOLD_SMALL },
+            { id:'zj', name:'钻戒', grade:5, price:15000, width:1, height:1, emoji:'💍', image:'images/zj.png', category:CATEGORY.GOLD_SMALL },
+            // 原有小金
+            { id:'jtyx', name:'监听音箱', grade:5, price:20000, width:2, height:2, emoji:'🔊', image:'images/jtyx.png', category:CATEGORY.GOLD_SMALL },
+            { id:'shcj', name:'奢华茶具', grade:5, price:20000, width:2, height:2, emoji:'🍵', image:'images/shcj.png', category:CATEGORY.GOLD_SMALL },
+            { id:'dyjp', name:'电影胶片', grade:5, price:15000, width:2, height:2, emoji:'🎞️', image:'images/dyjp.png', category:CATEGORY.GOLD_SMALL },
+            { id:'jl', name:'金链', grade:5, price:80000, width:2, height:1, emoji:'🔗', image:'images/jl.png', category:CATEGORY.GOLD_SMALL },
+            { id:'gmsz', name:'光明使者碎片', grade:5, price:60000, width:1, height:1, emoji:'⚡', image:'images/gmsz.png', category:CATEGORY.GOLD_SMALL },
+            { id:'gdzt', name:'古董烛台', grade:5, price:50000, width:1, height:1, emoji:'🕯️', image:'images/gdzt.png', category:CATEGORY.GOLD_SMALL },
+            { id:'dmt', name:'多面骰', grade:5, price:50000, width:1, height:1, emoji:'🎲', image:'images/dmt.png', category:CATEGORY.GOLD_SMALL }
+        ];
+
+        // ---------- 紫色物品 (价格 ≤1.8w) ----------
+        const purpleItems = [
+            // 横六 3x2
+            { id:'gjj', name:'钢筋剪', grade:4, price:15000, width:3, height:2, emoji:'🔧', image:'images/gjj.png', category:CATEGORY.PURPLE },
+            { id:'lj', name:'链锯', grade:4, price:15000, width:3, height:2, emoji:'⛓️', image:'images/lj.png', category:CATEGORY.PURPLE },
+            { id:'gwhmx', name:'国王号模型', grade:4, price:16000, width:3, height:2, emoji:'👑', image:'images/gwhmx.png', category:CATEGORY.PURPLE },
+            // 竖六 2x3
+            { id:'fzdx', name:'仿制雕像', grade:4, price:12000, width:2, height:3, emoji:'🗿', image:'images/fzdx.png', category:CATEGORY.PURPLE },
+            // 横三 3x1
+            { id:'gypld', name:'工艺品猎刀', grade:4, price:15000, width:3, height:1, emoji:'🔪', image:'images/gypld.png', category:CATEGORY.PURPLE },
+            { id:'sgsp', name:'手工树皮', grade:4, price:8000, width:3, height:1, emoji:'🌳', image:'images/sgsp.png', category:CATEGORY.PURPLE },
+            { id:'hggsj', name:'辉光管时钟', grade:4, price:8000, width:3, height:1, emoji:'⏲️', image:'images/hggsj.png', category:CATEGORY.PURPLE },
+            // 四格 2x2
+            { id:'bwg', name:'丙烷罐', grade:4, price:15000, width:2, height:2, emoji:'🔥', image:'images/bwg.png', category:CATEGORY.PURPLE },
+            { id:'yt', name:'油桶', grade:4, price:8000, width:2, height:2, emoji:'⛽', image:'images/yt.png', category:CATEGORY.PURPLE },
+            { id:'ncj', name:'耐冲击硬胶', grade:4, price:15000, width:2, height:2, emoji:'🧪', image:'images/ncj.png', category:CATEGORY.PURPLE },
+            { id:'sn', name:'水泥', grade:4, price:8000, width:2, height:2, emoji:'🧱', image:'images/sn.png', category:CATEGORY.PURPLE },
+            { id:'psudy', name:'PSU电源', grade:4, price:12000, width:2, height:2, emoji:'🔌', image:'images/psudy.png', category:CATEGORY.PURPLE },
+            { id:'dnzb', name:'电脑主板', grade:4, price:15000, width:2, height:2, emoji:'🖥️', image:'images/dnzb.png', category:CATEGORY.PURPLE },
+            { id:'gfj', name:'鼓风机', grade:4, price:15000, width:2, height:2, emoji:'💨', image:'images/gfj.png', category:CATEGORY.PURPLE },
+            { id:'dz', name:'电钻', grade:4, price:15000, width:2, height:2, emoji:'🔩', image:'images/dz.png', category:CATEGORY.PURPLE },
+            { id:'gjtz', name:'工具套组', grade:4, price:15000, width:2, height:2, emoji:'🧰', image:'images/gjtz.png', category:CATEGORY.PURPLE },
+            { id:'xcq', name:'吸尘器', grade:4, price:15000, width:2, height:2, emoji:'🧹', image:'images/xcq.png', category:CATEGORY.PURPLE },
+            { id:'jjl', name:'酒精炉', grade:4, price:15000, width:2, height:2, emoji:'🍶', image:'images/jjl.png', category:CATEGORY.PURPLE },
+            { id:'wllq', name:'薇雷拉琴', grade:4, price:12000, width:2, height:2, emoji:'🎻', image:'images/wllq.png', category:CATEGORY.PURPLE },
+            { id:'xdfl', name:'小袋肥料', grade:4, price:12000, width:2, height:2, emoji:'🌱', image:'images/xdfl.png', category:CATEGORY.PURPLE },
+            { id:'fdj_mx', name:'发动机模型', grade:4, price:8000, width:2, height:2, emoji:'🏎️', image:'images/fdj_mx.png', category:CATEGORY.PURPLE },
+            { id:'lpbyh', name:'老牌八音盒', grade:4, price:18000, width:2, height:2, emoji:'🎵', image:'images/lpbyh.png', category:CATEGORY.PURPLE },
+            { id:'yh', name:'油画', grade:4, price:5000, width:2, height:2, emoji:'🖼️', image:'images/yh.png', category:CATEGORY.PURPLE },
+            { id:'cd_bfq', name:'CD播放器', grade:4, price:15000, width:2, height:2, emoji:'💿', image:'images/cd_bfq.png', category:CATEGORY.PURPLE },
+            { id:'jmtz', name:'积木套装', grade:4, price:6000, width:2, height:2, emoji:'🧩', image:'images/jmtz.png', category:CATEGORY.PURPLE },
+            { id:'xhm', name:'硝化棉', grade:4, price:8000, width:2, height:2, emoji:'🧪', image:'images/xhm.png', category:CATEGORY.PURPLE },
+            // 新增四格小紫 2x2
+            { id:'ss', name:'伞绳', grade:4, price:15000, width:2, height:2, emoji:'🧵', image:'images/ss.png', category:CATEGORY.PURPLE },
+            // 新增横二 2x1
+            { id:'sbq', name:'示波器', grade:4, price:7000, width:2, height:1, emoji:'📊', image:'images/sbq.png', category:CATEGORY.PURPLE },
+            { id:'sjx', name:'破损数据线', grade:4, price:5000, width:2, height:1, emoji:'🔌', image:'images/sjx.png', category:CATEGORY.PURPLE },
+            { id:'cjwyj', name:'测距望远镜', grade:4, price:4000, width:2, height:1, emoji:'🔭', image:'images/cjwyj.png', category:CATEGORY.PURPLE },
+            { id:'dt', name:'电台', grade:4, price:5000, width:2, height:1, emoji:'📻', image:'images/dt.png', category:CATEGORY.PURPLE },
+            { id:'qmjy', name:'气密检测仪', grade:4, price:3000, width:2, height:1, emoji:'🔧', image:'images/qmjy.png', category:CATEGORY.PURPLE },
+            // 新增竖二 1x2
+            { id:'wxdjj', name:'无线对讲机', grade:4, price:5000, width:1, height:2, emoji:'📞', image:'images/wxdjj.png', category:CATEGORY.PURPLE },
+            { id:'pd', name:'炮弹', grade:4, price:8000, width:1, height:2, emoji:'💣', image:'images/pd.png', category:CATEGORY.PURPLE },
+            { id:'qtjy', name:'气体检测仪', grade:4, price:5000, width:1, height:2, emoji:'🔬', image:'images/qtjy.png', category:CATEGORY.PURPLE },
+            // 新增竖三 1x3
+            { id:'pdj', name:'炮队镜', grade:4, price:10000, width:1, height:3, emoji:'🔭', image:'images/pdj.png', category:CATEGORY.PURPLE },
+            // 新增一格 1x1
+            { id:'mb', name:'秒表', grade:4, price:2000, width:1, height:1, emoji:'⏱️', image:'images/mb.png', category:CATEGORY.PURPLE },
+            { id:'zxj', name:'照相机', grade:4, price:3000, width:1, height:1, emoji:'📷', image:'images/zxj.png', category:CATEGORY.PURPLE },
+            { id:'jt', name:'镜头', grade:4, price:5000, width:1, height:1, emoji:'🔍', image:'images/jt.png', category:CATEGORY.PURPLE },
+            { id:'phq', name:'平衡器', grade:4, price:4000, width:1, height:1, emoji:'⚖️', image:'images/phq.png', category:CATEGORY.PURPLE },
+            // 横二 2x1
+            { id:'jyl', name:'机油壶', grade:4, price:2000, width:2, height:1, emoji:'🛢️', image:'images/jyl.png', category:CATEGORY.PURPLE },
+            { id:'whdpm', name:'完好的屏幕', grade:4, price:4000, width:2, height:1, emoji:'📱', image:'images/whdpm.png', category:CATEGORY.PURPLE },
+            { id:'qjd', name:'千斤顶', grade:4, price:6000, width:2, height:1, emoji:'🔧', image:'images/qjd.png', category:CATEGORY.PURPLE },
+            { id:'jsyj', name:'金丝眼镜', grade:4, price:8000, width:2, height:1, emoji:'👓', image:'images/jsyj.png', category:CATEGORY.PURPLE },
+            // 竖二 1x2
+            { id:'jy', name:'机油', grade:4, price:5000, width:1, height:2, emoji:'🛢️', image:'images/jy.png', category:CATEGORY.PURPLE },
+            { id:'tqgjz', name:'通枪工具组', grade:4, price:8000, width:1, height:2, emoji:'🔫', image:'images/tqgjz.png', category:CATEGORY.PURPLE },
+            { id:'bgd', name:'补光灯', grade:4, price:8000, width:1, height:2, emoji:'💡', image:'images/bgd.png', category:CATEGORY.PURPLE },
+            { id:'gyxl', name:'工艺项链', grade:4, price:3000, width:1, height:2, emoji:'📿', image:'images/gyxl.png', category:CATEGORY.PURPLE },
+            { id:'szz', name:'竖座钟', grade:4, price:5000, width:1, height:2, emoji:'⏰', image:'images/szz.png', category:CATEGORY.PURPLE },
+            { id:'fdj2', name:'放大镜', grade:4, price:2000, width:1, height:2, emoji:'🔍', image:'images/fdj2.png', category:CATEGORY.PURPLE },
+            // 竖三 1x3
+            { id:'fdj', name:'防弹胶', grade:4, price:8500, width:1, height:3, emoji:'🛡️', image:'images/fdj.png', category:CATEGORY.PURPLE },
+            { id:'mfpm', name:'密封泡沫', grade:4, price:8000, width:1, height:3, emoji:'🧼', image:'images/mfpm.png', category:CATEGORY.PURPLE },
+            { id:'gg', name:'钢管', grade:4, price:8000, width:1, height:3, emoji:'🔩', image:'images/gg.png', category:CATEGORY.PURPLE },
+            // 一格 1x1
+            { id:'zydlb', name:'专用电路板', grade:4, price:7000, width:1, height:1, emoji:'🔌', image:'images/zydlb.png', category:CATEGORY.PURPLE },
+            { id:'gdzq', name:'固态', grade:4, price:4000, width:1, height:1, emoji:'💾', image:'images/gdzq.png', category:CATEGORY.PURPLE },
+            { id:'clq', name:'处理器', grade:4, price:4000, width:1, height:1, emoji:'⚙️', image:'images/clq.png', category:CATEGORY.PURPLE },
+            { id:'tynb', name:'太阳能板', grade:4, price:8000, width:1, height:1, emoji:'☀️', image:'images/tynb.png', category:CATEGORY.PURPLE },
+            { id:'hjq', name:'缓降器', grade:4, price:5000, width:1, height:1, emoji:'🪂', image:'images/hjq.png', category:CATEGORY.PURPLE },
+            { id:'ztq', name:'助听器', grade:4, price:8000, width:1, height:1, emoji:'👂', image:'images/ztq.png', category:CATEGORY.PURPLE },
+            { id:'xs', name:'香水', grade:4, price:8000, width:1, height:1, emoji:'🌸', image:'images/xs.png', category:CATEGORY.PURPLE },
+            { id:'wb', name:'腕表', grade:4, price:8000, width:1, height:1, emoji:'⌚', image:'images/wb.png', category:CATEGORY.PURPLE },
+            { id:'yxkd', name:'游戏卡带', grade:4, price:8000, width:1, height:1, emoji:'🎮', image:'images/yxkd.png', category:CATEGORY.PURPLE },
+            { id:'ftqc', name:'发条小汽车', grade:4, price:8000, width:1, height:1, emoji:'🚗', image:'images/ftqc.png', category:CATEGORY.PURPLE },
+            { id:'mrwj', name:'毛绒玩具', grade:4, price:8000, width:1, height:1, emoji:'🧸', image:'images/mrwj.png', category:CATEGORY.PURPLE },
+            { id:'swyb', name:'生物样本', grade:4, price:3000, width:1, height:1, emoji:'🧬', image:'images/swyb.png', category:CATEGORY.PURPLE },
+            { id:'twq', name:'体温枪', grade:4, price:6000, width:1, height:1, emoji:'🌡️', image:'images/twq.png', category:CATEGORY.PURPLE },
+            { id:'hb', name:'怀表', grade:4, price:2000, width:1, height:1, emoji:'⌛', image:'images/hb.png', category:CATEGORY.PURPLE },
+            { id:'jnyb', name:'纪念硬币', grade:4, price:2000, width:1, height:1, emoji:'🪙', image:'images/jnyb.png', category:CATEGORY.PURPLE },
+            { id:'ypsl', name:'银片手链', grade:4, price:4000, width:1, height:1, emoji:'📿', image:'images/ypsl.png', category:CATEGORY.PURPLE },
+            { id:'jxp', name:'机械硬盘', grade:4, price:4000, width:1, height:1, emoji:'💾', image:'images/jxp.png', category:CATEGORY.PURPLE },
+            { id:'ncx', name:'内存条', grade:4, price:4000, width:1, height:1, emoji:'🧠', image:'images/ncx.png', category:CATEGORY.PURPLE }
+        ];
+
+        // ---------- 辅助函数 ----------
+        function formatPrice(price) {
+            if (price>=1000000) return (price/1000000).toFixed(1)+'m';
+            if (price>=1000) return (price/1000).toFixed(1)+'k';
+            return price.toString();
+        }
+
+        // 生成科恩币 (2-3叠，价格不接近)
+        function generateCoins() {
+            const count = Math.floor(Math.random()*2)+2;
+            let coins = [];
+            for (let i=0;i<count;i++) {
+                let price;
+                do { price = Math.floor(Math.random()*(1085-1000+1))+1000; }
+                while (coins.some(c=>Math.abs(c.price-price)<20));
+                coins.push({ ...coinBase, price, id:`coin_${i}_${Date.now()}` });
+            }
+            return coins;
+        }
+
+        // 加权随机选取：从给定数组中，大尺寸物品（面积≥4）权重为2，其余为1
+        function weightedRandomPick(itemsArray) {
+            let pool = [];
+            itemsArray.forEach(item => {
+                pool.push(item);
+                if (item.width * item.height >= 4) {
+                    pool.push(item);
+                }
+            });
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        // 生成物品列表 (总数不超过7)
+        function generateItems() {
+            let items = generateCoins();
+            const maxItems = 7;
+            const remaining = maxItems - items.length;
+            if (remaining<=0) return items;
+            const otherCount = Math.floor(Math.random()*(remaining+1));
+            for (let i=0;i<otherCount;i++) {
+                const rand = Math.random();
+                let candidate;
+                if (IsHighRate) {
+                    // 高爆率模式: 紫50%, 小金30%, 大金20%
+                    if (rand < 0.5) {
+                        candidate = weightedRandomPick(purpleItems);
+                    } else if (rand < 0.8) {
+                        candidate = weightedRandomPick(goldSmallItems);
+                    } else {
+                        candidate = weightedRandomPick(goldBigItems);
+                    }
+                } else {
+                    // 默认概率: 紫70%, 小金25%, 大金5%
+                    if (rand < 0.7) {
+                        candidate = purpleItems[Math.floor(Math.random()*purpleItems.length)];
+                    } else if (rand < 0.95) {
+                        candidate = goldSmallItems[Math.floor(Math.random()*goldSmallItems.length)];
+                    } else {
+                        candidate = goldBigItems[Math.floor(Math.random()*goldBigItems.length)];
+                    }
+                }
+                items.push({ ...candidate, id:candidate.id+'_'+Date.now()+'_'+i });
+            }
+            return items;
+        }
+
+        // 放置物品到网格，优先将科恩币放在左上角
+        function placeItems(items) {
+            let grid = Array(ROWS).fill().map(()=>Array(COLS).fill(null));
+            const coins = items.filter(item=>item.category===CATEGORY.COIN);
+            const others = items.filter(item=>item.category!==CATEGORY.COIN)
+                                 .sort((a,b)=>(b.width*b.height)-(a.width*a.height));
+            for (let coin of coins) {
+                let placed = false;
+                for (let row=0;row<ROWS;row++) {
+                    for (let col=0;col<COLS;col++) {
+                        if (grid[row][col]===null) {
+                            grid[row][col] = { item:coin, startRow:row, startCol:col };
+                            placed = true;
+                            break;
+                        }
+                    }
+                    if (placed) break;
+                }
+            }
+            for (let item of others) {
+                let placed = false;
+                for (let row=0;row<=ROWS-item.height;row++) {
+                    for (let col=0;col<=COLS-item.width;col++) {
+                        let free = true;
+                        for (let dr=0;dr<item.height;dr++) {
+                            for (let dc=0;dc<item.width;dc++) {
+                                if (grid[row+dr][col+dc]!==null) { free=false; break; }
+                            }
+                            if (!free) break;
+                        }
+                        if (free) {
+                            for (let dr=0;dr<item.height;dr++) {
+                                for (let dc=0;dc<item.width;dc++) {
+                                    grid[row+dr][col+dc] = { item, startRow:row, startCol:col };
+                                }
+                            }
+                            placed = true;
+                            break;
+                        }
+                    }
+                    if (placed) break;
+                }
+            }
+            return grid;
+        }
+
+        // 渲染初始网格 (所有格子白色)
+        function renderInitialGrid() {
+            const gridEl = document.getElementById('grid');
+            gridEl.innerHTML = '';
+            for (let row=0;row<ROWS;row++) {
+                for (let col=0;col<COLS;col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.style.backgroundColor = '#ffffff';
+                    gridEl.appendChild(cell);
+                }
+            }
+        }
+
+        // 清除所有蒙版和覆盖层
+        function clearAllOverlays() {
+            document.querySelectorAll('.mask-overlay').forEach(el => el.remove());
+            document.querySelectorAll('.item-cover').forEach(el => el.remove());
+        }
+
+        // 为每个物品创建纯黑蒙版
+        function createMasks() {
+            const wrapper = document.getElementById('grid-wrapper');
+            const gridEl = document.getElementById('grid');
+            const cells = gridEl.children;
+            const itemMap = new Map();
+            for (let row=0;row<ROWS;row++) {
+                for (let col=0;col<COLS;col++) {
+                    const cellData = gridState[row][col];
+                    if (cellData) {
+                        const id = cellData.item.id;
+                        if (!itemMap.has(id)) {
+                            const item = cellData.item;
+                            itemMap.set(id, {
+                                item,
+                                startRow:cellData.startRow,
+                                startCol:cellData.startCol,
+                                endRow:cellData.startRow+item.height-1,
+                                endCol:cellData.startCol+item.width-1
+                            });
+                        }
+                    }
+                }
+            }
+            itemMap.forEach(info => {
+                const startIndex = info.startRow*COLS + info.startCol;
+                const endIndex = info.endRow*COLS + info.endCol;
+                const startCell = cells[startIndex];
+                const endCell = cells[endIndex];
+                if (!startCell || !endCell) return;
+                const startRect = startCell.getBoundingClientRect();
+                const endRect = endCell.getBoundingClientRect();
+                const wrapperRect = wrapper.getBoundingClientRect();
+                const left = startRect.left - wrapperRect.left;
+                const top = startRect.top - wrapperRect.top;
+                const width = endRect.right - startRect.left;
+                const height = endRect.bottom - startRect.top;
+                const mask = document.createElement('div');
+                mask.className = 'mask-overlay';
+                mask.style.left = left + 'px';
+                mask.style.top = top + 'px';
+                mask.style.width = width + 'px';
+                mask.style.height = height + 'px';
+                mask.id = 'mask-' + info.item.id;
+                wrapper.appendChild(mask);
+            });
+        }
+
+        function showMaskWithOrbit(itemId) {
+            const mask = document.getElementById('mask-' + itemId);
+            if (mask) {
+                mask.innerHTML = `
+                    <div class="orbit-container">
+                        <i class="fas fa-search"></i>
+                    </div>
+                `;
+            }
+        }
+
+        function removeMask(itemId) {
+            const mask = document.getElementById('mask-' + itemId);
+            if (mask) mask.remove();
+        }
+
+        function createItemCover(item, startRow, startCol, endRow, endCol) {
+            const wrapper = document.getElementById('grid-wrapper');
+            const gridEl = document.getElementById('grid');
+            const startCell = gridEl.children[startRow*COLS + startCol];
+            const endCell = gridEl.children[endRow*COLS + endCol];
+            if (!startCell || !endCell) return;
+
+            const startRect = startCell.getBoundingClientRect();
+            const endRect = endCell.getBoundingClientRect();
+            const wrapperRect = wrapper.getBoundingClientRect();
+
+            const cover = document.createElement('div');
+            cover.className = 'item-cover';
+            cover.style.left = (startRect.left - wrapperRect.left) + 'px';
+            cover.style.top = (startRect.top - wrapperRect.top) + 'px';
+            cover.style.width = (endRect.right - startRect.left) + 'px';
+            cover.style.height = (endRect.bottom - startRect.top) + 'px';
+
+            const handleError = () => {
+                cover.style.backgroundColor = gradeColors[item.grade] || '#5a5a5a';
+                const emojiSpan = document.createElement('span');
+                emojiSpan.className = 'emoji-placeholder';
+                emojiSpan.textContent = item.emoji;
+                cover.appendChild(emojiSpan);
+            };
+
+            if (item.image) {
+                const img = new Image();
+                img.onload = () => {
+                    cover.style.backgroundImage = `url('${item.image}')`;
+                    cover.style.backgroundColor = 'transparent';
+                };
+                img.onerror = handleError;
+                img.src = item.image;
+            } else {
+                handleError();
+            }
+
+            const details = document.createElement('div');
+            details.className = 'item-details';
+            details.innerHTML = `<span class="item-name-short">${item.name.slice(0,6)}</span><span class="item-price-tag">${formatPrice(item.price)}</span>`;
+            cover.appendChild(details);
+            cover.id = 'cover-' + item.id;
+            wrapper.appendChild(cover);
+        }
+
+        function revealItem(item) {
+            let startRow, startCol, endRow, endCol;
+            for (let row=0;row<ROWS;row++) {
+                for (let col=0;col<COLS;col++) {
+                    const cell = gridState[row][col];
+                    if (cell && cell.item.id === item.id) {
+                        startRow = cell.startRow;
+                        startCol = cell.startCol;
+                        endRow = startRow + item.height - 1;
+                        endCol = startCol + item.width - 1;
+                        break;
+                    }
+                }
+            }
+            if (startRow === undefined) return;
+            const gridEl = document.getElementById('grid');
+            const cells = gridEl.children;
+            for (let row=startRow; row<=endRow; row++) {
+                for (let col=startCol; col<=endCol; col++) {
+                    const index = row*COLS + col;
+                    const cell = cells[index];
+                    cell.className = 'grid-cell';
+                    cell.classList.add(gradeColors[item.grade] || 'grade1');
+                    cell.innerHTML = '';
+                }
+            }
+            createItemCover(item, startRow, startCol, endRow, endCol);
+        }
+
+        function startSearch(containerId) {
+            if (isSearching) return;
+            revealTimeouts.forEach(clearTimeout);
+            revealTimeouts = [];
+            clearAllOverlays();
+
+            searchCount++;
+            document.getElementById('search-title').innerText = `第${searchCount}次搜刮 保险箱`;
+            document.getElementById('total-price').innerText = '0';
+
+            let items, grid;
+            let attempts = 0;
+            do {
+                items = generateItems();
+                grid = placeItems(items);
+                attempts++;
+            } while (!grid && attempts < 10);
+            if (!grid) { alert('物品放置失败'); return; }
+            currentItems = items;
+            gridState = grid;
+
+            document.getElementById('container-list').style.display = 'none';
+            document.getElementById('search-area').style.display = 'block';
+            renderInitialGrid();
+
+            const wrapper = document.getElementById('grid-wrapper');
+            const overallMask = document.createElement('div');
+            overallMask.className = 'overall-mask';
+            overallMask.id = 'overall-mask';
+            overallMask.innerHTML = '<div class="search-text">搜索中</div><div class="timer" id="overall-timer">0.00s</div>';
+            wrapper.appendChild(overallMask);
+
+            // 开始播放整体搜索音效（先播放一次 start，然后循环 loop）
+            playOverallLoop();
+
+            isSearching = true;
+            const startTime = performance.now();
+            const timerInterval = setInterval(() => {
+                const elapsed = (performance.now() - startTime)/1000;
+                if (elapsed >= 1.5) clearInterval(timerInterval);
+                document.getElementById('overall-timer').innerText = elapsed.toFixed(2)+'s';
+            }, 50);
+
+            const overallTimeout = setTimeout(() => {
+                clearInterval(timerInterval);
+                const overall = document.getElementById('overall-mask');
+                if (overall) overall.remove();
+
+                createMasks();
+
+                const uniqueItems = [];
+                const seen = new Set();
+                for (let row=0;row<ROWS;row++) {
+                    for (let col=0;col<COLS;col++) {
+                        const cell = gridState[row][col];
+                        if (cell && !seen.has(cell.item.id)) {
+                            seen.add(cell.item.id);
+                            uniqueItems.push(cell.item);
+                        }
+                    }
+                }
+                uniqueItems.sort((a,b)=>{
+                    if (a.startRow !== b.startRow) return a.startRow - b.startRow;
+                    return a.startCol - b.startCol;
+                });
+
+                searchNext(0, uniqueItems);
+            }, 1500);
+            revealTimeouts.push(overallTimeout);
+        }
+
+        function searchNext(index, uniqueItems) {
+            if (index >= uniqueItems.length) {
+                isSearching = false;
+                stopOverallLoop(); // 所有物品揭示完毕，停止整体搜索音效
+                const total = currentItems.reduce((sum,it)=>sum+it.price,0);
+                document.getElementById('total-price').innerText = formatPrice(total)+' (总)';
+                addToRecords(currentItems);
+                return;
+            }
+            const item = uniqueItems[index];
+            showMaskWithOrbit(item.id);
+            const searchTime = SEARCH_TIME[item.category] || 1500;
+            const timeout = setTimeout(() => {
+                removeMask(item.id);
+                revealItem(item);
+                // 播放对应品质音效（可重叠）
+                if (item.category === CATEGORY.COIN) playSound('coin');
+                else if (item.category === CATEGORY.PURPLE) playSound('purple');
+                else if (item.category === CATEGORY.GOLD_SMALL) playSound('goldSmall');
+                else if (item.category === CATEGORY.GOLD_BIG) playSound('goldBig');
+                vibrateIfGold(item.category);
+                searchNext(index+1, uniqueItems);
+            }, searchTime);
+            revealTimeouts.push(timeout);
+        }
+
+        function continueSearch() { if (!isSearching) startSearch(currentContainerId); }
+        function backToList() {
+            if (isSearching) return;
+            revealTimeouts.forEach(clearTimeout);
+            revealTimeouts = [];
+            stopOverallLoop(); // 确保音效停止
+            clearAllOverlays();
+            document.getElementById('search-area').style.display = 'none';
+            document.getElementById('container-list').style.display = 'grid';
+        }
+
+        function initContainers() {
+            document.getElementById('container-list').innerHTML = `
+                <div class="item-card" onclick="startSearch(1)">
+                    <div class="item-image">🔒</div>
+                    <div class="item-name">保险箱</div>
+                    <div class="badge">点击搜索</div>
+                </div>
+            `;
+        }
+        function start() {
+            document.getElementById('jinggao').style.display = 'none';
+            document.getElementById('moniqi').style.display = 'block';
+            initContainers();
+        }
+
+        // 得吃记录 (分类显示，包含科恩币)
+        let records = JSON.parse(localStorage.getItem('touchi_records')) || { count:0, items:{} };
+
+        function addToRecords(items) {
+            records.count++;
+            items.forEach(item => {
+                const key = item.name;
+                if (records.items[key]) {
+                    records.items[key].count += 1;
+                } else {
+                    records.items[key] = { 
+                        name:item.name, 
+                        grade:item.grade, 
+                        price:item.price, 
+                        count:1, 
+                        emoji:item.emoji, 
+                        image:item.image,
+                        category: item.category
+                    };
+                }
+            });
+            localStorage.setItem('touchi_records', JSON.stringify(records));
+        }
+
+        function showRecords() {
+            const modal = document.getElementById('recordsModal');
+            const content = document.getElementById('recordsContent');
+            let html = '';
+
+            // 分类统计
+            const categories = {
+                [CATEGORY.GOLD_BIG]: { name: '大金', items: [], total: 0, count: 0 },
+                [CATEGORY.GOLD_SMALL]: { name: '小金', items: [], total: 0, count: 0 },
+                [CATEGORY.PURPLE]: { name: '小紫', items: [], total: 0, count: 0 },
+                [CATEGORY.COIN]: { name: '科恩币', items: [], total: 0, count: 0 }
+            };
+
+            for (let key in records.items) {
+                const it = records.items[key];
+                const cat = it.category;
+                if (categories[cat]) {
+                    categories[cat].items.push(it);
+                    categories[cat].total += it.price * it.count;
+                    categories[cat].count += it.count;
+                }
+            }
+
+            let overallTotal = 0;
+            for (let cat of [CATEGORY.GOLD_BIG, CATEGORY.GOLD_SMALL, CATEGORY.PURPLE, CATEGORY.COIN]) {
+                const c = categories[cat];
+                if (c.items.length === 0) continue;
+                html += `<div class="record-category">${c.name}：共 ${c.count} 件 总价 ${formatPrice(c.total)}</div>`;
+                overallTotal += c.total;
+                c.items.sort((a,b) => b.price - a.price);
+                c.items.forEach(it => {
+                    html += `
+                        <div class="record-item">
+                            <div class="item-icon">${it.emoji}</div>
+                            <div style="font-size:12px;">${it.name}</div>
+                            <div style="font-size:11px;">x${it.count}</div>
+                            <div style="color:#b45309;">${formatPrice(it.price * it.count)}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            html += `<div class="record-category">总计：${formatPrice(overallTotal)}</div>`;
+            if (html === '') html = '<div class="text-center">暂无记录</div>';
+            content.innerHTML = html;
+            modal.style.display = 'flex';
+        }
+
+        function clearRecords() {
+            if (confirm('确定清除所有记录吗？')) {
+                records = { count:0, items:{} };
+                localStorage.removeItem('touchi_records');
+                closeModal();
+            }
+        }
+
+        function closeModal() { document.getElementById('recordsModal').style.display = 'none'; }
+    </script>
+
+    <!-- ========== 图片规格说明 ==========
+         1. 所有物品图标请放入 images/ 文件夹，文件名与上述 image 字段一致。
+         2. 建议图片为正方形，边长 80px 或 160px，背景透明，内容居中。
+         3. 音效文件放入 sounds/ 文件夹：coin.mp3, purple.mp3, gold_small.mp3, gold_big.mp3, overall_start.mp3, overall_loop.mp3
+    -->
+</body>
 </html>
